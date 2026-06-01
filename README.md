@@ -245,12 +245,12 @@ This addition is surgical, publication-ready, explains the concept to non-techni
 
 ### Executing Skills Directly via CLI (npx)
 
-The Beunec ASPS framework provides executable command-line interfaces for both global routing and individual skills. You can execute these via `npx` either directly from the GitHub repository or the npm package. 
+The Beunec AAP framework provides executable command-line interfaces for both global routing and individual skills. You can execute these via `npx` either directly from the GitHub repository or the npm package. 
 
-By default, the `npx` command returns the **"Agentic Awareness Input Prompt"** version of the file, which is ready to be used by any user or AI agent directly.
+By default, the CLI command returns the **"Agentic Awareness Input Prompt"** version of the file, which is ready to be used by any user or AI agent directly.
 To return the **"LLM System Instruction"** version (designed for developers embedding it in an LLM backend), append `--system-instruction`.
 
-**1. Running Directly From GitHub (Without Publishing)**
+**1. Running Directly From GitHub (Without Publishing or Installing)**
 
 Your terminal agents can run specific skills without installing by querying the GitHub repo directly:
 
@@ -277,9 +277,9 @@ npx beunec/agentic-annotation-protocol aap-legal --system-instruction
 npx beunec/agentic-annotation-protocol aap-finance --system-instruction
 ```
 
-**2. Running From published npm registry**
+**2. Running From published npm registry via npx**
 
-Once published via `npm publish`, agents can call the package directly:
+Agents can call the package directly without installing it globally:
 ```bash
 npx beunec-agentic-annotation-protocol
 ```
@@ -324,10 +324,25 @@ Designed for end-users to copy/paste directly into a standard LLM chat box along
 
 ## Installation & Usage
 
-Install the lightweight AAP framework for re-engineering into your project:
+You can also install the lightweight AAP framework for re-engineering into your project or for global execution CLI.
+
+**Install as a project dependency:**
 
 ```bash
 npm install beunec-agentic-annotation-protocol
+```
+
+**Or globally for CLI access anywhere:**
+
+```bash
+npm install -g beunec-agentic-annotation-protocol
+```
+
+If installed globally, you can run the commands directly without `npx`:
+```bash
+beunec-agentic-annotation-protocol
+aap-code
+aap-finance --system-instruction
 ```
 
 - Website: [https://beunec.co](https://beunec.co)
