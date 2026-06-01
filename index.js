@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-
 console.log("Beunec AAP Skills Runner");
 
 const args = process.argv.slice(2);
