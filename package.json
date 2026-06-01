@@ -1,0 +1,20 @@
+{
+  "name": "beunec-agentic-annotation-protocol",
+  "version": "1.0.0",
+  "description": "CLI Agentic Annotation Protocols for terminal agents & LLMs. Created and owned by Beunec Technologies Inc., Open Source & Licensed under the MIT.",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "beunec-agentic-annotation-protocol": "./index.js",
+    "aap-code": "./aap/code/index.js",
+    "aap-research": "./aap/research/index.js",
+    "aap-generative-chat": "./aap/generative-chat/index.js",
+    "aap-legal": "./aap/legal/index.js",
+    "aap-finance": "./aap/financial intelligence & data automator/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Beunec Technologies Inc.",
+  "license": "MIT"
+}
