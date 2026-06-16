@@ -1090,117 +1090,117 @@ AWS
 
 ### \[AWS-IAM-001\] Wildcard IAM Policies - Administrative Privilege Escalation
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "Effect": "Allow",    "Action": "*",    "Resource": "*"  } OR {    "Effect": "Allow",     "Action": "iam:*",    "Resource": "*"  }  Severity: CRITICAL (P0) - Full AWS account takeover vector  Detection: Scan all IAM policies for Action: "*" or Resource: "*" patterns  Safe: Specific action lists with explicit resource ARNs  Remediation: Replace with least-privilege policy sets   `
+`   Risk: {    "Effect": "Allow",    "Action": "*",    "Resource": "*"  } OR {    "Effect": "Allow",     "Action": "iam:*",    "Resource": "*"  }  Severity: CRITICAL (P0) - Full AWS account takeover vector  Detection: Scan all IAM policies for Action: "*" or Resource: "*" patterns  Safe: Specific action lists with explicit resource ARNs  Remediation: Replace with least-privilege policy sets   `
 
 ### \[AWS-IAM-002\] Cross-Account Role Trust Boundary Violations
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "Version": "2012-10-17",    "Statement": [{      "Effect": "Allow",      "Principal": {"AWS": "*"},      "Action": "sts:AssumeRole"    }]  }  Severity: CRITICAL (P0) - Any AWS account can assume role  Detection: Trust policies with Principal: "*" or Principal: {"AWS": "*"}  Safe: Explicit account IDs in Principal field with ExternalId condition  Remediation: Add specific account ARNs and mandatory ExternalId   `
+`   Risk: {    "Version": "2012-10-17",    "Statement": [{      "Effect": "Allow",      "Principal": {"AWS": "*"},      "Action": "sts:AssumeRole"    }]  }  Severity: CRITICAL (P0) - Any AWS account can assume role  Detection: Trust policies with Principal: "*" or Principal: {"AWS": "*"}  Safe: Explicit account IDs in Principal field with ExternalId condition  Remediation: Add specific account ARNs and mandatory ExternalId   `
 
 ### \[AWS-IAM-003\] Long-Term Access Keys in Production
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: IAM users with programmatic access keys older than 90 days  Severity: HIGH (P1) - Credential rotation failure  Detection: aws iam list-access-keys --user-name, check CreateDate  Safe: IAM roles with temporary credentials via STS  Remediation: Migrate to IAM roles, delete access keys   `
+`   Risk: IAM users with programmatic access keys older than 90 days  Severity: HIGH (P1) - Credential rotation failure  Detection: aws iam list-access-keys --user-name, check CreateDate  Safe: IAM roles with temporary credentials via STS  Remediation: Migrate to IAM roles, delete access keys   `
 
 ### \[AWS-IAM-004\] Root Account Usage Detection
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Root user API calls or console logins in CloudTrail logs  Severity: CRITICAL (P0) - Violates security best practices  Detection: CloudTrail events with userIdentity.type = "Root"  Safe: Root account locked down, MFA enabled, no access keys  Remediation: Create IAM admin users, disable root access keys   `
+`   Risk: Root user API calls or console logins in CloudTrail logs  Severity: CRITICAL (P0) - Violates security best practices  Detection: CloudTrail events with userIdentity.type = "Root"  Safe: Root account locked down, MFA enabled, no access keys  Remediation: Create IAM admin users, disable root access keys   `
 
 2\. DATA STORAGE & ENCRYPTION LAYER
 -----------------------------------
 
 ### \[AWS-S3-001\] Public Access Block Disabled
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "BlockPublicAcls": false,    "IgnorePublicAcls": false,     "BlockPublicPolicy": false,    "RestrictPublicBuckets": false  }  Severity: CRITICAL (P0) - Data exposure vector (Capital One breach pattern)  Detection: aws s3api get-public-access-block --bucket  Safe: All four settings must be true for data buckets  Remediation: aws s3api put-public-access-block --bucket --public-access-block-configuration   `
+`   Risk: {    "BlockPublicAcls": false,    "IgnorePublicAcls": false,     "BlockPublicPolicy": false,    "RestrictPublicBuckets": false  }  Severity: CRITICAL (P0) - Data exposure vector (Capital One breach pattern)  Detection: aws s3api get-public-access-block --bucket  Safe: All four settings must be true for data buckets  Remediation: aws s3api put-public-access-block --bucket --public-access-block-configuration   `
 
 ### \[AWS-S3-002\] Server-Side Encryption Disabled
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: S3 buckets without default encryption configuration  Severity: HIGH (P1) - Data at rest exposure  Detection: aws s3api get-bucket-encryption --bucket (NoSuchBucketEncryption error)  Safe: AES256 or aws:kms encryption enabled by default  Remediation: aws s3api put-bucket-encryption with SSE-S3 or SSE-KMS   `
+`   Risk: S3 buckets without default encryption configuration  Severity: HIGH (P1) - Data at rest exposure  Detection: aws s3api get-bucket-encryption --bucket (NoSuchBucketEncryption error)  Safe: AES256 or aws:kms encryption enabled by default  Remediation: aws s3api put-bucket-encryption with SSE-S3 or SSE-KMS   `
 
 ### \[AWS-RDS-001\] Publicly Accessible Database Instances
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "PubliclyAccessible": true,    "VpcSecurityGroups": [{"GroupId": "sg-xxx", "Status": "active"}]  }  Severity: CRITICAL (P0) - Database exposed to internet  Detection: aws rds describe-db-instances, check PubliclyAccessible  Safe: PubliclyAccessible: false, private subnets only  Remediation: aws rds modify-db-instance --no-publicly-accessible   `
+`   Risk: {    "PubliclyAccessible": true,    "VpcSecurityGroups": [{"GroupId": "sg-xxx", "Status": "active"}]  }  Severity: CRITICAL (P0) - Database exposed to internet  Detection: aws rds describe-db-instances, check PubliclyAccessible  Safe: PubliclyAccessible: false, private subnets only  Remediation: aws rds modify-db-instance --no-publicly-accessible   `
 
 ### \[AWS-RDS-002\] Unencrypted RDS Instances
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "StorageEncrypted": false,    "Engine": "mysql|postgres|oracle|sqlserver"  }  Severity: HIGH (P1) - Database encryption missing  Detection: aws rds describe-db-instances, check StorageEncrypted  Safe: StorageEncrypted: true with KMS key  Remediation: Create encrypted snapshot, restore to new encrypted instance   `
+`   Risk: {    "StorageEncrypted": false,    "Engine": "mysql|postgres|oracle|sqlserver"  }  Severity: HIGH (P1) - Database encryption missing  Detection: aws rds describe-db-instances, check StorageEncrypted  Safe: StorageEncrypted: true with KMS key  Remediation: Create encrypted snapshot, restore to new encrypted instance   `
 
 3\. COMPUTE & CONTAINER SECURITY LAYER
 --------------------------------------
 
 ### \[AWS-EC2-001\] Security Group Ingress 0.0.0.0/0 on Critical Ports
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],    "FromPort": 22|3389|3306|5432|6379|27017|1433|5984  }  Severity: CRITICAL (P0) - SSH, RDP, database ports exposed globally  Detection: aws ec2 describe-security-groups, scan IpPermissions  Safe: Specific IP ranges or security group references only  Remediation: Replace 0.0.0.0/0 with specific CIDR blocks   `
+`   Risk: {    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],    "FromPort": 22|3389|3306|5432|6379|27017|1433|5984  }  Severity: CRITICAL (P0) - SSH, RDP, database ports exposed globally  Detection: aws ec2 describe-security-groups, scan IpPermissions  Safe: Specific IP ranges or security group references only  Remediation: Replace 0.0.0.0/0 with specific CIDR blocks   `
 
 ### \[AWS-EC2-002\] IMDSv1 Enabled (SSRF Attack Vector)
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "MetadataOptions": {      "HttpTokens": "optional",      "HttpEndpoint": "enabled"    }  }  Severity: HIGH (P1) - Server-Side Request Forgery vulnerability  Detection: aws ec2 describe-instances, check MetadataOptions  Safe: HttpTokens: "required" (IMDSv2 only)  Remediation: aws ec2 modify-instance-metadata-options --http-tokens required   `
+`   Risk: {    "MetadataOptions": {      "HttpTokens": "optional",      "HttpEndpoint": "enabled"    }  }  Severity: HIGH (P1) - Server-Side Request Forgery vulnerability  Detection: aws ec2 describe-instances, check MetadataOptions  Safe: HttpTokens: "required" (IMDSv2 only)  Remediation: aws ec2 modify-instance-metadata-options --http-tokens required   `
 
 ### \[AWS-LAMBDA-001\] Environment Variables Containing Secrets
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Lambda environment variables with patterns:  - PASSWORD, SECRET, KEY, TOKEN, CREDENTIAL  - Base64 encoded strings > 20 characters  - JWT tokens, API keys, database URLs  Severity: HIGH (P1) - Secrets exposed in console/CloudFormation  Detection: aws lambda get-function --function-name, scan Environment.Variables  Safe: AWS Secrets Manager or SSM Parameter Store references  Remediation: Move secrets to Secrets Manager, use runtime retrieval   `
+`   Risk: Lambda environment variables with patterns:  - PASSWORD, SECRET, KEY, TOKEN, CREDENTIAL  - Base64 encoded strings > 20 characters  - JWT tokens, API keys, database URLs  Severity: HIGH (P1) - Secrets exposed in console/CloudFormation  Detection: aws lambda get-function --function-name, scan Environment.Variables  Safe: AWS Secrets Manager or SSM Parameter Store references  Remediation: Move secrets to Secrets Manager, use runtime retrieval   `
 
 ### \[AWS-EKS-001\] Public API Server Endpoint
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "Endpoint": {      "Config": {        "PublicAccessCidrs": ["0.0.0.0/0"]      }    }  }  Severity: HIGH (P1) - Kubernetes API exposed globally  Detection: aws eks describe-cluster, check endpoint configuration  Safe: Private endpoint or restricted CIDR blocks  Remediation: aws eks update-cluster-config --resources-vpc-config   `
+`   Risk: {    "Endpoint": {      "Config": {        "PublicAccessCidrs": ["0.0.0.0/0"]      }    }  }  Severity: HIGH (P1) - Kubernetes API exposed globally  Detection: aws eks describe-cluster, check endpoint configuration  Safe: Private endpoint or restricted CIDR blocks  Remediation: aws eks update-cluster-config --resources-vpc-config   `
 
 ### \[AWS-ECR-001\] Container Images Running as Root
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Dockerfile with no USER directive or USER root  Severity: MEDIUM (P2) - Container escape privilege escalation  Detection: docker inspect image, check Config.User field  Safe: Non-root user specified in Dockerfile  Remediation: Add USER directive with non-privileged user   `
+`   Risk: Dockerfile with no USER directive or USER root  Severity: MEDIUM (P2) - Container escape privilege escalation  Detection: docker inspect image, check Config.User field  Safe: Non-root user specified in Dockerfile  Remediation: Add USER directive with non-privileged user   `
 
 4\. NETWORK & VPC SECURITY LAYER
 --------------------------------
 
 ### \[AWS-VPC-001\] Default VPC in Production Use
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Resources deployed in default VPC with default security groups  Severity: MEDIUM (P2) - Insufficient network isolation  Detection: aws ec2 describe-vpcs --filters "Name=isDefault,Values=true"  Safe: Custom VPC with private/public subnet architecture  Remediation: Create custom VPC, migrate resources   `
+`   Risk: Resources deployed in default VPC with default security groups  Severity: MEDIUM (P2) - Insufficient network isolation  Detection: aws ec2 describe-vpcs --filters "Name=isDefault,Values=true"  Safe: Custom VPC with private/public subnet architecture  Remediation: Create custom VPC, migrate resources   `
 
 ### \[AWS-VPC-002\] VPC Flow Logs Disabled
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: VPC without flow logs enabled for network monitoring  Severity: MEDIUM (P2) - No network traffic audit trail  Detection: aws ec2 describe-flow-logs --filter "Name=resource-type,Values=VPC"  Safe: VPC Flow Logs enabled to CloudWatch or S3  Remediation: aws ec2 create-flow-logs --resource-type VPC   `
+`   Risk: VPC without flow logs enabled for network monitoring  Severity: MEDIUM (P2) - No network traffic audit trail  Detection: aws ec2 describe-flow-logs --filter "Name=resource-type,Values=VPC"  Safe: VPC Flow Logs enabled to CloudWatch or S3  Remediation: aws ec2 create-flow-logs --resource-type VPC   `
 
 ### \[AWS-ALB-001\] Application Load Balancer Without WAF
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Internet-facing ALB without AWS WAF protection  Severity: MEDIUM (P2) - No application layer protection  Detection: aws elbv2 describe-load-balancers + aws wafv2 list-web-acls  Safe: WAF WebACL associated with ALB  Remediation: Create WAF WebACL, associate with ALB   `
+`   Risk: Internet-facing ALB without AWS WAF protection  Severity: MEDIUM (P2) - No application layer protection  Detection: aws elbv2 describe-load-balancers + aws wafv2 list-web-acls  Safe: WAF WebACL associated with ALB  Remediation: Create WAF WebACL, associate with ALB   `
 
 5\. SERVERLESS & MODERN SERVICES LAYER
 --------------------------------------
 
 ### \[AWS-BEDROCK-001\] Model Invocation Logs to Unencrypted S3
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Bedrock model invocation logs stored in unencrypted S3 bucket  Severity: HIGH (P1) - AI/ML data exposure  Detection: aws bedrock get-model-invocation-logging-configuration  Safe: Logs encrypted with KMS, restricted bucket access  Remediation: Enable S3 bucket encryption, update logging config   `
+`   Risk: Bedrock model invocation logs stored in unencrypted S3 bucket  Severity: HIGH (P1) - AI/ML data exposure  Detection: aws bedrock get-model-invocation-logging-configuration  Safe: Logs encrypted with KMS, restricted bucket access  Remediation: Enable S3 bucket encryption, update logging config   `
 
 ### \[AWS-STEPFUNCTIONS-001\] State Machine with Sensitive Data in Definition
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: Step Functions state machine with hardcoded credentials/secrets  Severity: HIGH (P1) - Secrets in state machine definition  Detection: aws stepfunctions describe-state-machine, scan definition JSON  Safe: Use Parameters and ResultPath for dynamic values  Remediation: Replace hardcoded values with parameter references   `
+`   Risk: Step Functions state machine with hardcoded credentials/secrets  Severity: HIGH (P1) - Secrets in state machine definition  Detection: aws stepfunctions describe-state-machine, scan definition JSON  Safe: Use Parameters and ResultPath for dynamic values  Remediation: Replace hardcoded values with parameter references   `
 
 ### \[AWS-EVENTBRIDGE-001\] Open Event Bus Permissions
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "Sid": "AllowAll",    "Effect": "Allow",     "Principal": "*",    "Action": "events:PutEvents"  }  Severity: MEDIUM (P2) - Event injection vulnerability  Detection: aws events describe-event-bus, check Policy  Safe: Specific principal ARNs with condition constraints  Remediation: Replace wildcard principals with specific accounts/roles   `
+`   Risk: {    "Sid": "AllowAll",    "Effect": "Allow",     "Principal": "*",    "Action": "events:PutEvents"  }  Severity: MEDIUM (P2) - Event injection vulnerability  Detection: aws events describe-event-bus, check Policy  Safe: Specific principal ARNs with condition constraints  Remediation: Replace wildcard principals with specific accounts/roles   `
 
 6\. MONITORING & COMPLIANCE LAYER
 ---------------------------------
 
 ### \[AWS-CLOUDTRAIL-001\] CloudTrail Disabled or Misconfigured
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "IsLogging": false  } OR {    "S3BucketName": "bucket-without-encryption"  }  Severity: CRITICAL (P0) - No audit trail (SOC 2/HIPAA violation)  Detection: aws cloudtrail get-trail-status --name  Safe: Multi-region trail with encrypted S3 bucket  Remediation: Enable CloudTrail with KMS encryption   `
+`   Risk: {    "IsLogging": false  } OR {    "S3BucketName": "bucket-without-encryption"  }  Severity: CRITICAL (P0) - No audit trail (SOC 2/HIPAA violation)  Detection: aws cloudtrail get-trail-status --name  Safe: Multi-region trail with encrypted S3 bucket  Remediation: Enable CloudTrail with KMS encryption   `
 
 ### \[AWS-CONFIG-001\] AWS Config Disabled in Active Regions
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: AWS Config not recording configuration changes  Severity: HIGH (P1) - No configuration compliance monitoring  Detection: aws configservice describe-configuration-recorders  Safe: Config enabled with S3 delivery channel  Remediation: aws configservice put-configuration-recorder   `
+`   Risk: AWS Config not recording configuration changes  Severity: HIGH (P1) - No configuration compliance monitoring  Detection: aws configservice describe-configuration-recorders  Safe: Config enabled with S3 delivery channel  Remediation: aws configservice put-configuration-recorder   `
 
 ### \[AWS-GUARDDUTY-001\] GuardDuty Disabled
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: GuardDuty threat detection not enabled  Severity: HIGH (P1) - No threat detection capability  Detection: aws guardduty list-detectors (empty response)  Safe: GuardDuty enabled with S3 protection and Malware Protection  Remediation: aws guardduty create-detector --enable   `
+`   Risk: GuardDuty threat detection not enabled  Severity: HIGH (P1) - No threat detection capability  Detection: aws guardduty list-detectors (empty response)  Safe: GuardDuty enabled with S3 protection and Malware Protection  Remediation: aws guardduty create-detector --enable   `
 
 7\. SECRETS & PARAMETER MANAGEMENT
 ----------------------------------
 
 ### \[AWS-SSM-001\] Secrets in Parameter Store as String Type
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "Type": "String",    "Name": "/app/database/password"  }  Severity: HIGH (P1) - Unencrypted secrets storage  Detection: aws ssm get-parameters, check Type field  Safe: Type: "SecureString" with KMS encryption  Remediation: aws ssm put-parameter --type SecureString --key-id   `
+`   Risk: {    "Type": "String",    "Name": "/app/database/password"  }  Severity: HIGH (P1) - Unencrypted secrets storage  Detection: aws ssm get-parameters, check Type field  Safe: Type: "SecureString" with KMS encryption  Remediation: aws ssm put-parameter --type SecureString --key-id   `
 
 ### \[AWS-SECRETS-001\] Secrets Manager Without Rotation
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   Risk: {    "RotationEnabled": false,    "LastRotatedDate": "older than 90 days"  }  Severity: MEDIUM (P2) - Stale credentials risk  Detection: aws secretsmanager list-secrets, check rotation status  Safe: Automatic rotation enabled with Lambda function  Remediation: aws secretsmanager rotate-secret --rotation-rules   `
+`   Risk: {    "RotationEnabled": false,    "LastRotatedDate": "older than 90 days"  }  Severity: MEDIUM (P2) - Stale credentials risk  Detection: aws secretsmanager list-secrets, check rotation status  Safe: Automatic rotation enabled with Lambda function  Remediation: aws secretsmanager rotate-secret --rotation-rules   `
 
 AUTOMATED REMEDIATION FRAMEWORK
 -------------------------------
@@ -1216,7 +1216,7 @@ AUTOMATED REMEDIATION FRAMEWORK
 
 ### Detection Patterns:
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   # Example detection logic for S3 public access  def detect_s3_public_access():      for bucket in s3_client.list_buckets()['Buckets']:          try:              pab = s3_client.get_public_access_block(Bucket=bucket['Name'])              config = pab['PublicAccessBlockConfiguration']              if not all([config['BlockPublicAcls'], config['IgnorePublicAcls'],                          config['BlockPublicPolicy'], config['RestrictPublicBuckets']]):                  return {                      'finding_id': 'AWS-S3-001',                      'severity': 'CRITICAL',                      'resource': bucket['Name'],                      'auto_remediate': True                  }          except ClientError as e:              if e.response['Error']['Code'] == 'NoSuchPublicAccessBlockConfiguration':                  return {                      'finding_id': 'AWS-S3-001',                      'severity': 'CRITICAL',                       'resource': bucket['Name'],                      'auto_remediate': True                  }   `
+`   # Example detection logic for S3 public access  def detect_s3_public_access():      for bucket in s3_client.list_buckets()['Buckets']:          try:              pab = s3_client.get_public_access_block(Bucket=bucket['Name'])              config = pab['PublicAccessBlockConfiguration']              if not all([config['BlockPublicAcls'], config['IgnorePublicAcls'],                          config['BlockPublicPolicy'], config['RestrictPublicBuckets']]):                  return {                      'finding_id': 'AWS-S3-001',                      'severity': 'CRITICAL',                      'resource': bucket['Name'],                      'auto_remediate': True                  }          except ClientError as e:              if e.response['Error']['Code'] == 'NoSuchPublicAccessBlockConfiguration':                  return {                      'finding_id': 'AWS-S3-001',                      'severity': 'CRITICAL',                       'resource': bucket['Name'],                      'auto_remediate': True                  }   `
 
 This protocol provides comprehensive coverage of enterprise AWS security risks with specific detection patterns, severity classifications, and automated remediation paths suitable for agentic security systems.
 
