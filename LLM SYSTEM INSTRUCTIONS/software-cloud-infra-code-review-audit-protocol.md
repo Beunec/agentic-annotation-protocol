@@ -1084,10 +1084,9 @@ Generic Password         password=, passwd=, pwd= followed by  HIGH (P1)
 
 AWS
 =============================================
-
+```
 1\. IDENTITY & ACCESS MANAGEMENT (IAM) LAYER
 --------------------------------------------
-```
 
 ### \[AWS-IAM-001\] Wildcard IAM Policies - Administrative Privilege Escalation
 
