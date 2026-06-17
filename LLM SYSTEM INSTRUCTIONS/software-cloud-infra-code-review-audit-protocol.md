@@ -2638,7 +2638,1885 @@ The API key exposure is acceptable ONLY if the security rules are properly
 configured. The key without rules is a CRITICAL exposure regardless of
 Firebase's design intent.
 ```
+---
 
+````
+---
+
+## [TERMINAL EXECUTION PROTOCOL — AGENTIC SCAN · REVIEW · FIX ENGINE]
+
+### Purpose
+
+This section defines how the agentic code review/security audit engine must use terminals across:
+
+- Linux terminal
+- macOS terminal
+- Windows PowerShell
+- Windows Command Prompt
+- Windows Terminal
+- VS Code integrated terminal
+- JetBrains IDE terminal
+- GitHub Codespaces terminal
+- Docker/container shell
+- CI/CD runner shell
+- Cloud shell environments
+
+The terminal is treated as a controlled execution surface for defensive engineering only:
+
+1. Discover project topology
+2. Identify frameworks, package managers, languages, and runtime boundaries
+3. Run non-destructive scan commands
+4. Review output deterministically
+5. Generate safe remediation plans
+6. Apply fixes only when explicitly allowed by the developer or pipeline policy
+7. Verify the fix with tests, linting, builds, and security re-scans
+
+The agent must never treat terminal access as permission to perform uncontrolled exploitation, destructive modification, data exfiltration, credential display, or live attack simulation.
+
+---
+
+## [TERMINAL SAFETY BOUNDARIES]
+
+### Mandatory Rules
+
+The agent MUST obey the following terminal rules:
+
+- Never run destructive commands without explicit approval:
+  - `rm -rf`
+  - `del /s /q`
+  - `format`
+  - `drop database`
+  - `terraform destroy`
+  - `kubectl delete`
+  - `docker system prune -a`
+  - `git reset --hard`
+  - `git clean -xfd`
+  - cloud delete commands
+- Never print secret values to logs.
+- Never echo environment variables containing:
+  - `KEY`
+  - `TOKEN`
+  - `SECRET`
+  - `PASSWORD`
+  - `PRIVATE`
+  - `CREDENTIAL`
+  - `DATABASE_URL`
+  - `CONNECTION_STRING`
+- Never execute downloaded scripts directly with:
+  - `curl ... | bash`
+  - `wget ... | sh`
+  - `Invoke-WebRequest ... | iex`
+- Never run active exploitation commands against public systems.
+- Never run network scanning against systems not explicitly owned or authorized by the user.
+- Never modify production resources directly unless operating under an approved pre-production/prod-change workflow.
+- Always prefer read-only inspection before modification.
+- Always create a diff, patch, branch, backup, or restore path before applying fixes.
+- Always redact secrets from terminal output before including them in reports.
+- Always classify terminal findings using the protocol severity system:
+  - P0 CRITICAL
+  - P1 HIGH
+  - P2 MEDIUM
+  - P3 LOW
+  - P4 INFO
+
+---
+
+## [TERMINAL EXECUTION MODES]
+
+The agent MUST classify every terminal operation into one of these modes.
+
+### Mode 1 — Discover
+
+Purpose: Identify project structure, languages, frameworks, package managers, and deployment surfaces.
+
+Allowed operations:
+
+- List files
+- Identify lock files
+- Identify framework configs
+- Identify package manifests
+- Identify Docker/IaC/CI/CD files
+- Identify mobile build files
+- Identify cloud configuration files
+
+No code is modified.
+
+---
+
+### Mode 2 — Scan
+
+Purpose: Run safe static, dependency, secret, lint, IaC, container, and mobile security scans.
+
+Allowed operations:
+
+- Dependency audit
+- Secret scan
+- Static analysis
+- Type checking
+- Linting
+- IaC validation
+- Container image scan
+- Mobile dependency scan
+- Test discovery
+- Configuration validation
+
+No code is modified unless the scanner itself writes cache files.
+
+---
+
+### Mode 3 — Review
+
+Purpose: Interpret terminal results and map them to actionable findings.
+
+Allowed operations:
+
+- Parse logs
+- Summarize errors
+- Deduplicate findings
+- Map issues to file paths and line numbers
+- Assign severity
+- Identify false positives
+- Produce remediation plan
+
+No code is modified.
+
+---
+
+### Mode 4 — Fix
+
+Purpose: Apply safe remediation only after scan and review.
+
+Allowed operations:
+
+- Edit vulnerable code
+- Update dependency versions
+- Add missing validation
+- Add security headers
+- Add safe environment variable usage
+- Add tests
+- Patch IaC configuration
+- Patch CI/CD configuration
+- Patch mobile platform permissions
+- Generate migration scripts
+
+Required conditions before fix:
+
+1. Finding must be grounded in observed code or terminal output.
+2. Fix must be framework-specific.
+3. Fix must not introduce breaking runtime behavior without warning.
+4. Fix must be applied in a branch or patch.
+5. Fix must be verified after application.
+
+---
+
+### Mode 5 — Verify
+
+Purpose: Confirm that the fix works.
+
+Required operations:
+
+- Re-run relevant scan
+- Re-run tests
+- Re-run build
+- Re-run type check
+- Re-run lint
+- Re-run dependency audit where applicable
+- Confirm finding no longer appears
+- Confirm no new P0/P1 findings were introduced
+
+---
+
+## [CROSS-PLATFORM TERMINAL DETECTION]
+
+Before running any commands, the agent MUST detect the terminal and operating system.
+
+### Linux/macOS Shell Detection
+
+```bash
+uname -a
+echo "$SHELL"
+pwd
+whoami
+````
+
+### Windows PowerShell Detection
+
+```powershell
+$PSVersionTable
+Get-Location
+whoami
+```
+
+### Windows Command Prompt Detection
+
+```cmd
+ver
+cd
+whoami
+```
+
+### Node Runtime Detection
+
+```bash
+node --version
+npm --version
+pnpm --version
+yarn --version
+bun --version
+```
+
+### Python Runtime Detection
+
+```bash
+python --version
+python3 --version
+pip --version
+pip3 --version
+```
+
+### Java Runtime Detection
+
+```bash
+java -version
+mvn -version
+gradle -version
+```
+
+### .NET Runtime Detection
+
+```bash
+dotnet --info
+```
+
+### Rust Runtime Detection
+
+```bash
+rustc --version
+cargo --version
+```
+
+### Go Runtime Detection
+
+```bash
+go version
+```
+
+### Ruby Runtime Detection
+
+```bash
+ruby --version
+bundle --version
+rails --version
+```
+
+### PHP/Laravel Runtime Detection
+
+```bash
+php --version
+composer --version
+php artisan --version
+```
+
+### Mobile Runtime Detection
+
+```bash
+swift --version
+xcodebuild -version
+flutter --version
+dart --version
+java -version
+gradle -version
+adb version
+pod --version
+```
+
+***
+
+## \[PROJECT TOPOLOGY DISCOVERY COMMANDS]
+
+The agent MUST run topology discovery before framework-specific scanning.
+
+### Linux/macOS
+
+```bash
+pwd
+find . -maxdepth 3 -type f \
+  \( \
+    -name "package.json" -o \
+    -name "pnpm-lock.yaml" -o \
+    -name "yarn.lock" -o \
+    -name "package-lock.json" -o \
+    -name "requirements.txt" -o \
+    -name "pyproject.toml" -o \
+    -name "Pipfile" -o \
+    -name "Cargo.toml" -o \
+    -name "Cargo.lock" -o \
+    -name "pom.xml" -o \
+    -name "build.gradle" -o \
+    -name "settings.gradle" -o \
+    -name "Gemfile" -o \
+    -name "composer.json" -o \
+    -name "*.csproj" -o \
+    -name "*.sln" -o \
+    -name "Dockerfile" -o \
+    -name "docker-compose.yml" -o \
+    -name "*.tf" -o \
+    -name ".github" -o \
+    -name "firebase.json" -o \
+    -name "firestore.rules" -o \
+    -name "supabase" -o \
+    -name "pubspec.yaml" -o \
+    -name "Podfile" -o \
+    -name "Package.swift" \
+  \) -print
+```
+
+### Windows PowerShell
+
+```powershell
+Get-Location
+
+Get-ChildItem -Recurse -Depth 3 -File |
+  Where-Object {
+    $_.Name -in @(
+      "package.json",
+      "pnpm-lock.yaml",
+      "yarn.lock",
+      "package-lock.json",
+      "requirements.txt",
+      "pyproject.toml",
+      "Pipfile",
+      "Cargo.toml",
+      "Cargo.lock",
+      "pom.xml",
+      "build.gradle",
+      "settings.gradle",
+      "Gemfile",
+      "composer.json",
+      "Dockerfile",
+      "docker-compose.yml",
+      "firebase.json",
+      "firestore.rules",
+      "pubspec.yaml",
+      "Podfile",
+      "Package.swift"
+    ) -or
+    $_.Extension -in @(".tf", ".csproj", ".sln")
+  } |
+  Select-Object FullName
+```
+
+***
+
+## \[SAFE SECRET SCANNING LOGIC]
+
+The agent MUST scan for secrets without printing full secret values.
+
+### Universal Secret Pattern Search — Linux/macOS
+
+```bash
+grep -RInE \
+  "(sk-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}|AIza[0-9A-Za-z_-]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|hf_[A-Za-z0-9]{20,}|-----BEGIN (RSA|EC|OPENSSH|PRIVATE) KEY-----|DATABASE_URL|PRIVATE_KEY|SECRET_KEY|ACCESS_TOKEN|REFRESH_TOKEN|AUTH_TOKEN|CLIENT_SECRET|PASSWORD|PASSWD|SUPABASE_SERVICE_ROLE|STRIPE_SECRET|OPENAI_API_KEY|ANTHROPIC_API_KEY)" \
+  . \
+  --exclude-dir=node_modules \
+  --exclude-dir=.git \
+  --exclude-dir=dist \
+  --exclude-dir=build \
+  --exclude-dir=.next \
+  --exclude-dir=coverage
+```
+
+### Universal Secret Pattern Search — Windows PowerShell
+
+```powershell
+$patterns = @(
+  "sk-[A-Za-z0-9_-]{20,}",
+  "sk-proj-[A-Za-z0-9_-]{20,}",
+  "AKIA[A-Z0-9]{16}",
+  "AIza[0-9A-Za-z_-]{20,}",
+  "ghp_[A-Za-z0-9]{20,}",
+  "github_pat_[A-Za-z0-9_]{20,}",
+  "hf_[A-Za-z0-9]{20,}",
+  "-----BEGIN (RSA|EC|OPENSSH|PRIVATE) KEY-----",
+  "DATABASE_URL",
+  "PRIVATE_KEY",
+  "SECRET_KEY",
+  "ACCESS_TOKEN",
+  "REFRESH_TOKEN",
+  "AUTH_TOKEN",
+  "CLIENT_SECRET",
+  "PASSWORD",
+  "PASSWD",
+  "SUPABASE_SERVICE_ROLE",
+  "STRIPE_SECRET",
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY"
+)
+
+Get-ChildItem -Recurse -File |
+  Where-Object {
+    $_.FullName -notmatch "\\node_modules\\" -and
+    $_.FullName -notmatch "\\.git\\" -and
+    $_.FullName -notmatch "\\dist\\" -and
+    $_.FullName -notmatch "\\build\\" -and
+    $_.FullName -notmatch "\\.next\\" -and
+    $_.FullName -notmatch "\\coverage\\"
+  } |
+  Select-String -Pattern $patterns
+```
+
+### Preferred Secret Scanner
+
+If available, the agent SHOULD use `gitleaks`.
+
+```bash
+gitleaks detect --source . --redact --no-git
+```
+
+For git-history-aware scans:
+
+```bash
+gitleaks detect --source . --redact
+```
+
+Finding logic:
+
+* If a secret appears in source code: P0 CRITICAL.
+* If a secret appears only in `.env.example` with fake placeholder value: P4 INFO.
+* If a real secret appears in `.env`, `.env.local`, CI logs, Dockerfile, Terraform, Kubernetes YAML, or committed config: P0 CRITICAL.
+* If a secret appears in mobile source code: P0 CRITICAL because mobile apps are decompilable.
+* If any key was committed to git history: P0 CRITICAL and require immediate rotation.
+
+Required remediation:
+
+1. Redact from report.
+2. Rotate key.
+3. Remove from code.
+4. Move to secrets manager.
+5. Scrub git history only under human-approved workflow.
+6. Re-run secret scan.
+
+***
+
+## \[DEPENDENCY SCAN COMMAND MATRIX]
+
+The agent MUST identify the package manager and run the matching safe audit command.
+
+### JavaScript / TypeScript / Node.js / React / Next.js / Vue / Angular / Svelte / Solid / Preact / Alpine / Ember / Qwik / Lit / React Native
+
+#### npm
+
+```bash
+npm audit --json
+npm outdated
+npm ls --depth=0
+```
+
+#### pnpm
+
+```bash
+pnpm audit --json
+pnpm outdated
+pnpm list --depth 0
+```
+
+#### yarn
+
+```bash
+yarn audit --json
+yarn outdated
+yarn list --depth=0
+```
+
+#### bun
+
+```bash
+bun audit
+bun outdated
+```
+
+Review logic:
+
+* Lock file missing: P2 MEDIUM.
+* Production dependency with known critical CVE: P0/P1 depending on exploitability.
+* Floating versions without lock file: P2 MEDIUM.
+* `postinstall`/`preinstall` lifecycle scripts in suspicious packages: P1 HIGH.
+* Dev dependencies installed in production image: P2 MEDIUM.
+* AI SDK used client-side with provider key: P0 CRITICAL.
+
+***
+
+### Python / Django / Flask / FastAPI
+
+```bash
+python -m pip list
+python -m pip freeze
+python -m pip check
+```
+
+If `pip-audit` is installed:
+
+```bash
+pip-audit
+```
+
+If `safety` is installed:
+
+```bash
+safety check
+```
+
+Review logic:
+
+* `DEBUG=True` in Django production config: P0 CRITICAL.
+* Flask `debug=True` in production: P0 CRITICAL.
+* FastAPI route returning ORM model without response model: P1 HIGH.
+* Raw SQL with string interpolation: P0/P1 depending on data access.
+* Missing dependency pinning: P2 MEDIUM.
+* Vulnerable package affecting auth, crypto, deserialization, or request parsing: P1 HIGH or P0 CRITICAL.
+
+***
+
+### Rust
+
+```bash
+cargo check
+cargo test
+cargo clippy --all-targets --all-features
+cargo tree
+```
+
+If `cargo-audit` is installed:
+
+```bash
+cargo audit
+```
+
+Review logic:
+
+* `unsafe` block in auth, crypto, parsing, or credential handling: P1 HIGH unless justified.
+* `.unwrap()` on auth/session/JWT/permission path: P2 MEDIUM or P1 HIGH.
+* Dependency advisory affecting memory safety or crypto: P1 HIGH.
+* Missing tests for auth-critical code: P2 MEDIUM.
+
+***
+
+### Ruby / Ruby on Rails
+
+```bash
+bundle install
+bundle audit check
+rails routes
+rails zeitwerk:check
+```
+
+Review logic:
+
+* `params.permit!`: P1 HIGH.
+* `config/master.key` committed: P0 CRITICAL.
+* SQL string interpolation: P1 HIGH.
+* CSRF disabled without compensating control: P1 HIGH.
+* Secrets in credentials or environment printed in logs: P0/P1.
+
+***
+
+### Java / Spring Boot
+
+```bash
+mvn test
+mvn dependency:tree
+mvn versions:display-dependency-updates
+```
+
+For Gradle:
+
+```bash
+gradle test
+gradle dependencies
+```
+
+If OWASP Dependency Check is installed:
+
+```bash
+dependency-check --project project-audit --scan .
+```
+
+Review logic:
+
+* Spring Actuator exposed broadly: P0 CRITICAL.
+* CSRF disabled on cookie-based app: P1 HIGH.
+* Secrets in `application.properties` or `application.yml`: P0 CRITICAL.
+* Missing authorization annotations on sensitive controllers: P1 HIGH.
+* Deserialization libraries with known RCE CVEs: P0/P1.
+
+***
+
+### PHP / Laravel
+
+```bash
+composer audit
+composer outdated
+php artisan route:list
+php artisan config:show
+```
+
+Review logic:
+
+* `APP_DEBUG=true` in production: P0 CRITICAL.
+* Missing `$fillable` or `$guarded`: P1 HIGH.
+* `DB::raw`, `whereRaw`, `DB::select` with interpolation: P1 HIGH.
+* `.env` committed: P0 CRITICAL.
+* Queue/log config leaking PII: P1 HIGH.
+
+***
+
+### .NET / ASP.NET Core
+
+```bash
+dotnet restore
+dotnet build
+dotnet test
+dotnet list package --vulnerable
+dotnet list package --outdated
+```
+
+Review logic:
+
+* Connection strings with passwords in `appsettings.json`: P0 CRITICAL.
+* `[AllowAnonymous]` on sensitive controller/action: P1 HIGH.
+* Missing authorization policy on admin endpoints: P1 HIGH.
+* Secrets not using user-secrets, Key Vault, or environment variables: P1/P0.
+* Insecure CORS policy: P1/P2.
+
+***
+
+## \[FRONTEND FRAMEWORK TERMINAL LOGIC]
+
+The agent MUST combine framework-specific scans with static grep patterns.
+
+### Next.js
+
+```bash
+npm run lint
+npm run build
+grep -RIn "NEXT_PUBLIC_.*\(SECRET\|KEY\|TOKEN\|PASSWORD\|DATABASE\|OPENAI\|ANTHROPIC\|SUPABASE_SERVICE\)" .
+grep -RIn "dangerouslyAllowBrowser\|use server\|getServerSession\|middleware" .
+grep -RIn "remotePatterns\|images" next.config.*
+```
+
+Review logic:
+
+* Secret with `NEXT_PUBLIC_`: P0 CRITICAL.
+* OpenAI/Anthropic/etc. browser usage: P0 CRITICAL.
+* API route without auth before data access: P1 HIGH.
+* Server Action returning full DB model: P1 HIGH.
+* Wildcard image remote patterns: P1/P2 depending on SSRF surface.
+
+***
+
+### React TypeScript
+
+```bash
+npm run lint
+npm run build
+npx tsc --noEmit
+grep -RIn "dangerouslySetInnerHTML\|localStorage\|sessionStorage\|innerHTML\|eval(" src
+grep -RIn ": any\|as any" src
+```
+
+Review logic:
+
+* Unsanitized `dangerouslySetInnerHTML`: P1 HIGH.
+* Token/API key in localStorage/sessionStorage: P1 HIGH.
+* Secret in client bundle: P0 CRITICAL.
+* `any` in auth, user, payment, or PII path: P2 MEDIUM.
+
+***
+
+### Vue.js
+
+```bash
+npm run lint
+npm run build
+grep -RIn "v-html\|localStorage\|sessionStorage\|innerHTML" src
+grep -RIn "pinia\|vuex\|persist" src
+```
+
+Review logic:
+
+* `v-html` on user-controlled content: P1 HIGH.
+* PII persisted in Pinia/Vuex localStorage: P1 HIGH.
+* Global auth token attached to shared client without domain guard: P1 HIGH.
+
+***
+
+### Angular
+
+```bash
+npm run lint
+npm run build
+npx ng test --watch=false
+grep -RIn "bypassSecurityTrustHtml\|bypassSecurityTrustUrl\|bypassSecurityTrustResourceUrl" src
+grep -RIn "HttpInterceptor\|Authorization\|canActivate\|catchError" src
+```
+
+Review logic:
+
+* DomSanitizer bypass on user input: P0/P1.
+* Interceptor sends bearer token to all domains: P1 HIGH.
+* Route guard fails open: P1 HIGH.
+
+***
+
+### Svelte / SvelteKit
+
+```bash
+npm run check
+npm run build
+grep -RIn "\$env/static/public\|\$env/dynamic/public\|\$env/static/private" src
+grep -RIn "@html\|load" src
+```
+
+Review logic:
+
+* Private env imported into client file: P0 CRITICAL.
+* `@html` with user-controlled content: P1 HIGH.
+* Server load returns full DB record: P1 HIGH.
+
+***
+
+### SolidJS / Preact / Alpine.js / Ember.js / Qwik / Lit
+
+```bash
+npm run lint
+npm run build
+grep -RIn "innerHTML\|unsafeHTML\|x-html\|dangerouslySetInnerHTML\|localStorage\|sessionStorage" src
+grep -RIn "createResource\|action\$|routeLoader\$|signal" src
+```
+
+Review logic:
+
+* Lit `unsafeHTML` on user content: P1 HIGH.
+* Alpine `x-html` on user content: P1 HIGH.
+* Qwik `action$` returns sensitive data: P1 HIGH.
+* Preact/Solid SSR shared global state with user data: P1 HIGH.
+* Client-side token persistence: P1 HIGH.
+
+***
+
+## \[BACKEND FRAMEWORK TERMINAL LOGIC]
+
+### Node.js / Express.js
+
+```bash
+npm run lint
+npm test
+grep -RIn "helmet\|cors\|express.json\|rateLimit\|eval(\|new Function\|fs.readFile\|fs.writeFile" .
+grep -RIn "jwt.sign\|jsonwebtoken\|Authorization\|Bearer" .
+```
+
+Review logic:
+
+* Missing Helmet in public Express app: P2 MEDIUM.
+* Wildcard CORS with credentials: P1 HIGH.
+* `eval` or `new Function` with user input: P0 CRITICAL.
+* File path uses request parameter without normalization: P1 HIGH.
+* Login route without rate limit: P2 MEDIUM.
+* JWT secret hardcoded: P0 CRITICAL.
+
+***
+
+### NestJS
+
+```bash
+npm run lint
+npm test
+grep -RIn "ValidationPipe\|UseGuards\|JwtModule.register\|createQueryBuilder\|where(" src
+```
+
+Review logic:
+
+* Missing global ValidationPipe: P1 HIGH.
+* Hardcoded JWT secret: P0 CRITICAL.
+* Raw query builder interpolation: P1 HIGH.
+* Singleton service storing request-specific user/PII: P1 HIGH.
+
+***
+
+### Django
+
+```bash
+python manage.py check --deploy
+python manage.py test
+grep -RIn "DEBUG = True\|ALLOWED_HOSTS = \['\*'\]\|SECRET_KEY\s*=\|csrf_exempt\|cursor.execute" .
+```
+
+Review logic:
+
+* `DEBUG=True` in production: P0 CRITICAL.
+* `SECRET_KEY` hardcoded: P0 CRITICAL.
+* DB password in settings: P0 CRITICAL.
+* `ALLOWED_HOSTS=['*']`: P1 HIGH.
+* Raw SQL string formatting: P1 HIGH.
+* CSRF exemption on state-changing view: P1 HIGH.
+
+***
+
+### Flask
+
+```bash
+python -m pytest
+grep -RIn "debug=True\|app.secret_key\|SECRET_KEY\|text(f\|execute(f\|render_template_string" .
+```
+
+Review logic:
+
+* Debug mode in production: P0 CRITICAL.
+* Weak or random-per-restart secret key: P1 HIGH.
+* SQLAlchemy `text()` with interpolation: P1 HIGH.
+* `render_template_string` with user input: P1 HIGH.
+
+***
+
+### FastAPI
+
+```bash
+python -m pytest
+grep -RIn "response_model\|Depends\|CORSMiddleware\|BackgroundTasks\|print(.*DATABASE\|logger.*DATABASE" .
+```
+
+Review logic:
+
+* Route returns ORM model without `response_model`: P1 HIGH.
+* CORS wildcard with credentials: P1 HIGH.
+* Startup logs secrets: P0/P1.
+* Background task receives raw PII: P1 HIGH.
+
+***
+
+### Spring Boot
+
+```bash
+mvn test
+grep -RIn "management.endpoints.web.exposure.include\|csrf.disable\|permitAll\|PasswordEncoder\|application.properties\|application.yml" .
+```
+
+Review logic:
+
+* Actuator expose all in production: P0 CRITICAL.
+* CSRF disabled on cookie/session app: P1 HIGH.
+* Plain secrets in properties/YAML: P0 CRITICAL.
+* Weak password encoder: P1 HIGH.
+
+***
+
+### Laravel
+
+```bash
+php artisan test
+php artisan route:list
+grep -RIn "APP_DEBUG=true\|DB::raw\|whereRaw\|DB::select\|fillable\|guarded" .
+```
+
+Review logic:
+
+* `APP_DEBUG=true` in production: P0 CRITICAL.
+* Mass assignment risk: P1 HIGH.
+* Raw SQL interpolation: P1 HIGH.
+* `.env` committed: P0 CRITICAL.
+
+***
+
+### Ruby on Rails
+
+```bash
+bundle exec rails test
+bundle exec rails routes
+grep -RIn "permit!\|skip_before_action\|protect_from_forgery\|master.key\|find_by_sql" .
+```
+
+Review logic:
+
+* `params.permit!`: P1 HIGH.
+* `config/master.key` committed: P0 CRITICAL.
+* CSRF protection skipped broadly: P1 HIGH.
+* Raw SQL interpolation: P1 HIGH.
+
+***
+
+### ASP.NET Core
+
+```bash
+dotnet build
+dotnet test
+dotnet list package --vulnerable
+grep -RIn "AllowAnonymous\|ConnectionStrings\|UseCors\|AllowAnyOrigin\|AllowAnyHeader\|AllowAnyMethod" .
+```
+
+Review logic:
+
+* Connection string with password in appsettings: P0 CRITICAL.
+* `[AllowAnonymous]` on sensitive endpoint: P1 HIGH.
+* Broad CORS in production: P1/P2.
+* Missing authorization middleware: P1 HIGH.
+
+***
+
+### Rust Backend
+
+```bash
+cargo check
+cargo test
+cargo clippy --all-targets --all-features
+grep -RIn "unsafe\s*{\|unwrap()\|expect(\|jsonwebtoken\|sqlx::query(&format!\|format!(\"SELECT" src
+```
+
+Review logic:
+
+* `unsafe` around auth/crypto/parsing: P1 HIGH.
+* `unwrap()` in auth path: P1/P2.
+* SQL string construction: P1 HIGH.
+* Panic on malformed user input: P2 MEDIUM.
+
+***
+
+## \[MOBILE FRAMEWORK TERMINAL LOGIC]
+
+Mobile apps are treated as public client binaries. The agent MUST assume secrets embedded in mobile source or bundles are extractable.
+
+***
+
+### Swift / iOS
+
+```bash
+swift --version
+xcodebuild -list
+grep -RIn "API_KEY\|SECRET\|TOKEN\|PASSWORD\|PRIVATE_KEY\|UserDefaults\|Keychain\|NSAppTransportSecurity\|NSAllowsArbitraryLoads" .
+```
+
+If using Swift Package Manager:
+
+```bash
+swift package show-dependencies
+swift test
+```
+
+Review logic:
+
+* API key or AI provider key embedded in Swift source: P0 CRITICAL.
+* Sensitive token stored in `UserDefaults`: P1 HIGH.
+* Keychain used for sensitive token storage: expected secure pattern.
+* `NSAllowsArbitraryLoads=true`: P1 HIGH unless justified.
+* Missing certificate pinning for high-risk financial/health app: P2/P1.
+* Hardcoded backend URL for production without environment separation: P2 MEDIUM.
+
+Safe remediation pattern:
+
+* Move AI/cloud provider calls server-side.
+* Store only short-lived app session tokens.
+* Use Keychain for sensitive tokens.
+* Enforce HTTPS.
+* Use separate dev/staging/prod configs.
+
+***
+
+### React Native
+
+```bash
+npm audit --json
+npm run lint
+grep -RIn "AsyncStorage\|SecureStore\|Keychain\|API_KEY\|SECRET\|TOKEN\|PASSWORD\|OPENAI\|ANTHROPIC\|SUPABASE_SERVICE" .
+```
+
+Review logic:
+
+* Secret in React Native source: P0 CRITICAL.
+* Token in AsyncStorage: P1 HIGH.
+* Token in Expo SecureStore or react-native-keychain: acceptable pattern.
+* AI provider key in mobile app: P0 CRITICAL.
+* Insecure deep link auth handling: P1 HIGH.
+* Missing certificate validation/pinning for sensitive apps: P2/P1.
+
+Safe remediation pattern:
+
+* Mobile app calls owned backend only.
+* Backend authenticates user and calls third-party AI/cloud provider.
+* Store refresh/session tokens in secure storage.
+* Never store service role keys in app source.
+
+***
+
+### Dart / Flutter
+
+```bash
+flutter --version
+dart --version
+flutter analyze
+flutter test
+grep -RIn "SharedPreferences\|flutter_secure_storage\|API_KEY\|SECRET\|TOKEN\|PASSWORD\|OPENAI\|ANTHROPIC\|SUPABASE_SERVICE" .
+```
+
+Review logic:
+
+* Secret in Dart code: P0 CRITICAL.
+* Token in SharedPreferences: P1 HIGH.
+* Token in flutter\_secure\_storage: acceptable pattern.
+* `--dart-define` secret included in release build: P0/P1 depending on secret type.
+* AI provider key in Flutter app: P0 CRITICAL.
+* Insecure HTTP endpoint in production: P1 HIGH.
+
+Safe remediation pattern:
+
+* Move sensitive provider calls to backend.
+* Use secure storage for session tokens.
+* Enforce HTTPS.
+* Separate flavor configs for dev/staging/prod.
+
+***
+
+### Kotlin / Android
+
+```bash
+./gradlew test
+./gradlew lint
+./gradlew dependencies
+grep -RIn "API_KEY\|SECRET\|TOKEN\|PASSWORD\|SharedPreferences\|EncryptedSharedPreferences\|INTERNET\|usesCleartextTraffic" .
+```
+
+Review logic:
+
+* Secret in Kotlin/Java/XML/Gradle: P0 CRITICAL.
+* Token in SharedPreferences: P1 HIGH.
+* Token in EncryptedSharedPreferences: acceptable pattern.
+* `usesCleartextTraffic=true`: P1 HIGH unless local-only debug build.
+* AI provider key in app: P0 CRITICAL.
+* Overbroad Android permissions: P2/P1 depending on data access.
+
+Safe remediation pattern:
+
+* Move secrets to backend.
+* Use EncryptedSharedPreferences or Android Keystore.
+* Disable cleartext traffic in release.
+* Minimize permissions.
+
+***
+
+## \[DEVOPS / CI-CD TERMINAL LOGIC]
+
+### Git Discovery
+
+```bash
+git status --short
+git branch --show-current
+git remote -v
+git log --oneline -n 5
+```
+
+Review logic:
+
+* Dirty working tree before fix: warn and create patch.
+* Untracked secret files: P0/P1 depending on contents.
+* Sensitive file committed in history: P0 CRITICAL.
+
+***
+
+### GitHub Actions
+
+```bash
+find .github/workflows -type f -maxdepth 2 -print
+grep -RIn "pull_request_target\|secrets\.\|echo.*secrets\|uses: .*@[A-Za-z0-9._-]*$" .github/workflows
+```
+
+Review logic:
+
+* `pull_request_target` checking out fork code: P0 CRITICAL.
+* Echoing secrets: P0 CRITICAL.
+* Actions not pinned to SHA: P2 MEDIUM.
+* Broad permissions block: P1/P2.
+
+Safe remediation pattern:
+
+```yaml
+permissions:
+  contents: read
+```
+
+Use least privilege and pin third-party actions to immutable SHAs where required by policy.
+
+***
+
+### Docker
+
+```bash
+docker --version
+find . -name "Dockerfile*" -print
+grep -RIn "FROM .*:latest\|USER root\|USER\s*$\|ARG .*SECRET\|ENV .*SECRET\|ADD " .
+```
+
+If Docker is available:
+
+```bash
+docker build --no-cache -t local-audit-image .
+```
+
+If Trivy is installed:
+
+```bash
+trivy fs .
+trivy image local-audit-image
+```
+
+Review logic:
+
+* `FROM latest`: P2 MEDIUM.
+* No non-root user: P2 MEDIUM.
+* Secret in `ARG` or `ENV`: P0 CRITICAL.
+* `ADD` remote URL: P2/P1.
+* Critical container CVE reachable in runtime image: P1/P0.
+
+***
+
+### Kubernetes
+
+```bash
+kubectl version --client
+grep -RIn "privileged: true\|hostNetwork: true\|hostPID: true\|runAsUser: 0\|allowPrivilegeEscalation: true\|kind: Secret" .
+```
+
+If cluster access is explicitly authorized:
+
+```bash
+kubectl auth can-i --list
+kubectl get ns
+kubectl get pods --all-namespaces
+kubectl get networkpolicy --all-namespaces
+```
+
+Review logic:
+
+* Privileged pod: P0/P1 depending on environment.
+* Host network/PID: P1 HIGH.
+* Kubernetes Secret YAML committed: P0 CRITICAL.
+* No NetworkPolicy in sensitive namespaces: P2 MEDIUM.
+* Default service account with broad permissions: P1 HIGH.
+
+No destructive kubectl command may run without explicit approval.
+
+***
+
+### Terraform / IaC
+
+```bash
+terraform fmt -check -recursive
+terraform validate
+grep -RIn "0.0.0.0/0\|public-read\|allow_blob_public_access.*true\|default_action.*Allow\|Action.*\*\"|Resource.*\*\"" .
+```
+
+If Checkov is installed:
+
+```bash
+checkov -d .
+```
+
+If tfsec is installed:
+
+```bash
+tfsec .
+```
+
+Review logic:
+
+* Public database exposure: P0 CRITICAL.
+* Public storage bucket with user data: P0 CRITICAL.
+* Wildcard IAM admin policy: P0 CRITICAL.
+* Missing encryption at rest: P1 HIGH.
+* Missing logging/audit trail: P1/P2.
+* Terraform state in repo: P0 CRITICAL.
+
+Fix policy:
+
+* Never run `terraform apply` automatically.
+* Generate patch only.
+* Require human review.
+* Require `terraform plan` before apply.
+
+***
+
+## \[CLOUD CLI READ-ONLY AUDIT COMMANDS]
+
+Cloud CLI commands may only be used when the developer explicitly confirms authorized access.
+
+### AWS Read-Only Discovery
+
+```bash
+aws sts get-caller-identity
+aws iam get-account-summary
+aws s3api list-buckets
+aws ec2 describe-security-groups
+aws rds describe-db-instances
+aws cloudtrail describe-trails
+aws guardduty list-detectors
+```
+
+Review logic:
+
+* Public S3 bucket: P0 CRITICAL.
+* Security group exposes SSH/RDP/DB to `0.0.0.0/0`: P0 CRITICAL.
+* RDS publicly accessible: P0 CRITICAL.
+* CloudTrail disabled: P0/P1.
+* GuardDuty disabled: P1 HIGH.
+* Root access key exists: P0 CRITICAL.
+
+***
+
+### GCP Read-Only Discovery
+
+```bash
+gcloud auth list
+gcloud config list
+gcloud projects get-iam-policy PROJECT_ID
+gcloud compute firewall-rules list
+gcloud storage buckets list
+gcloud run services list
+gcloud container clusters list
+```
+
+Review logic:
+
+* `allUsers` on internal services: P0 CRITICAL.
+* Public firewall on admin/database ports: P0 CRITICAL.
+* Broad service account impersonation: P0/P1.
+* Public GKE control plane without authorized networks: P1 HIGH.
+* Plain env secrets in Cloud Run: P1 HIGH.
+
+***
+
+### Azure Read-Only Discovery
+
+```bash
+az account show
+az group list
+az storage account list
+az keyvault list
+az webapp list
+az network nsg list
+```
+
+Review logic:
+
+* Public blob access enabled: P0/P1.
+* Key Vault default action Allow: P1 HIGH.
+* Secrets in App Service settings: P1/P0.
+* No managed identity where service-to-service auth is used: P2/P1.
+* Public AI endpoint without network restriction: P1 HIGH.
+
+***
+
+## \[SCAN · REVIEW · FIX PIPELINE BY STAGE]
+
+### Development Stage
+
+Goal: Prevent insecure code from entering the repository.
+
+Required terminal sequence:
+
+```bash
+git status --short
+npm run lint || true
+npm test || true
+npm audit --json || true
+gitleaks detect --source . --redact --no-git || true
+```
+
+Equivalent commands must be selected based on detected stack.
+
+Development gates:
+
+* P0: block commit
+* P1: block merge unless explicitly accepted by security owner
+* P2: allow with ticket
+* P3/P4: allow with backlog item
+
+Required output:
+
+```yaml
+stage: development
+decision: "[PASS | BLOCK | PASS_WITH_WARNINGS]"
+p0_count: 0
+p1_count: 0
+p2_count: 0
+required_action: "[none | fix_before_commit | create_ticket | escalate]"
+```
+
+***
+
+### Testing Stage
+
+Goal: Validate security posture under integration conditions.
+
+Required terminal sequence:
+
+```bash
+git status --short
+npm run build || true
+npm test || true
+npm run lint || true
+npm audit --json || true
+gitleaks detect --source . --redact || true
+```
+
+Add framework-specific checks:
+
+* Django: `python manage.py check --deploy`
+* Rails: `bundle audit check`
+* Rust:`cargo clippy && cargo audit`
+* .NET: `dotnet list package --vulnerable`
+* Terraform: `terraform validate && checkov -d .`
+* Docker: `trivy fs .`
+
+Testing gates:
+
+* P0: block test promotion
+* P1: block pre-production unless risk accepted
+* P2: allow only with remediation plan
+* P3/P4: document
+
+***
+
+### Pre-Production Stage
+
+Goal: Ensure production readiness before release.
+
+Required terminal sequence:
+
+```bash
+git status --short
+git log --oneline -n 5
+gitleaks detect --source . --redact
+npm run build || true
+npm test || true
+npm audit --json || true
+docker build -t preprod-audit-image . || true
+trivy fs . || true
+```
+
+Add infrastructure checks:
+
+```bash
+terraform fmt -check -recursive
+terraform validate
+checkov -d .
+```
+
+Pre-production gates:
+
+* Any P0: release blocked.
+* Any unrotated exposed secret: release blocked.
+* Any public database/storage exposure: release blocked.
+* Any unauthenticated admin endpoint: release blocked.
+* Any AI provider key in frontend/mobile/client bundle: release blocked.
+* Any missing auth on PII endpoint: release blocked.
+* Any compliance-critical P1 requires security owner approval.
+
+Required output:
+
+```yaml
+stage: pre-production
+release_decision: "[APPROVED | BLOCKED | CONDITIONAL_APPROVAL]"
+blocking_findings:
+  - id: "BAAP-..."
+    severity: "P0"
+    reason: "..."
+required_before_release:
+  - "..."
+human_specialist_required:
+  - "..."
+```
+
+***
+
+## \[AGENTIC FIX WORKFLOW]
+
+The agent MUST follow this exact fix workflow.
+
+### Step 1 — Confirm Finding
+
+```yaml
+fix_step: confirm_finding
+requirements:
+  - finding_has_file_path: true
+  - finding_has_line_or_pattern: true
+  - finding_has_reproducible_scan_output: true
+  - finding_has_severity: true
+```
+
+### Step 2 — Create Safe Work Area
+
+```bash
+git status --short
+git checkout -b security/fix-BAAP-ID
+```
+
+If branch creation is not possible, generate a patch file instead.
+
+```bash
+git diff > security-fix-preview.patch
+```
+
+### Step 3 — Apply Minimal Fix
+
+Fix must be:
+
+* Smallest safe change
+* Framework-accurate
+* Compatible with existing architecture
+* Covered by test or validation command
+* Non-destructive
+* Secret-redacted
+* Backward-compatible where possible
+
+### Step 4 — Verify
+
+Run:
+
+```bash
+git diff
+```
+
+Then run stack-specific verification:
+
+* JavaScript/TypeScript: lint, typecheck, test, build, audit
+* Python: pytest, manage.py check, pip check, pip-audit
+* Rust: cargo check, test, clippy, audit
+* Java: mvn/gradle test, dependency audit
+* .NET: build, test, vulnerable package check
+* PHP: composer audit, artisan test
+* Ruby: rails test, bundle audit
+* Mobile: platform analyzer/test/lint
+* IaC: validate, fmt check, checkov/tfsec
+* Docker: build and scan
+
+### Step 5 — Produce Fix Record
+
+```yaml
+fix_record:
+  finding_id: "BAAP-..."
+  files_changed:
+    - "..."
+  commands_run:
+    - command: "..."
+      result: "[PASS | FAIL | PARTIAL]"
+  risk_reduced: true
+  new_findings_introduced: false
+  remaining_risk: "..."
+  human_review_required: "[YES | NO]"
+```
+
+***
+
+## \[TERMINAL OUTPUT REDACTION RULES]
+
+Before including terminal output in audit reports, the agent MUST redact:
+
+```text
+API keys
+Access tokens
+Refresh tokens
+JWTs
+Private keys
+Database URLs
+Connection strings
+Authorization headers
+Cookies
+Session IDs
+Cloud account secrets
+User PII
+Customer records
+Stack traces containing secrets
+```
+
+Required redaction format:
+
+```text
+[REDACTED_SECRET_TYPE: first_4_chars...last_4_chars]
+```
+
+Example:
+
+```text
+OPENAI_API_KEY=[REDACTED_OPENAI_KEY: sk-p...9xQ2]
+DATABASE_URL=[REDACTED_DATABASE_URL]
+Authorization: Bearer [REDACTED_TOKEN]
+```
+
+The agent must never reveal a full secret even if the terminal printed it.
+
+***
+
+## \[FINDING GENERATION FROM TERMINAL OUTPUT]
+
+Every terminal-derived finding MUST use this structure:
+
+```yaml
+terminal_finding:
+  id: "BAAP-TERM-[SEQUENCE]"
+  severity: "[CRITICAL | HIGH | MEDIUM | LOW | INFO]"
+  source_command: "[command run, with secrets redacted]"
+  command_mode: "[DISCOVER | SCAN | REVIEW | FIX | VERIFY]"
+  file: "[path if available]"
+  line: "[line/range if available]"
+  framework: "[detected framework]"
+  category: "[CREDENTIAL | DEPENDENCY | AUTH | CLOUD | MOBILE | AI-KEY | CONFIG | QUALITY | DATA]"
+  evidence: |
+    [redacted terminal evidence]
+  interpretation: |
+    [why the output matters]
+  remediation: |
+    [safe, framework-specific fix]
+  verification_command: "[command to prove fix]"
+  destructive_action_required: false
+  specialist_required: "[YES | NO]"
+```
+
+***
+
+## \[NOISE REDUCTION RULES]
+
+The agent MUST avoid noisy terminal findings.
+
+Do not create findings for:
+
+* Dev-only warnings unless they affect production
+* Test fixture fake secrets clearly marked as fake
+* Example `.env.example` placeholders
+* Public Firebase client API key alone, unless rules/config are insecure
+* Public frontend environment variables that are not secrets
+* Dependency update availability without vulnerability or policy requirement
+* Lint style warnings unless they affect security, reliability, or maintainability
+
+The agent MUST create findings for:
+
+* Real secrets
+* Auth bypass
+* PII exposure
+* SQL/command/template injection
+* XSS sinks
+* Unsafe deserialization
+* Public cloud data exposure
+* Privileged containers
+* Insecure mobile storage
+* AI provider key exposure
+* PII sent to AI provider without governance
+* CI/CD secret exposure
+* Unpinned critical production supply-chain paths
+* Production debug mode
+
+***
+
+## \[AUTHORIZED DEFENSIVE PENTESTING TERMINAL POLICY]
+
+The agent may assist with defensive validation only when all conditions are true:
+
+1. The target is local, test, staging, or explicitly authorized.
+2. The developer confirms ownership or authorization.
+3. The command is non-destructive.
+4. The command does not exfiltrate data.
+5. The command does not provide reusable exploit tooling.
+6. The result is used to validate remediation, not attack.
+
+Allowed examples:
+
+```bash
+curl -I https://staging.example.com
+curl -s -o /dev/null -w "%{http_code}\n" https://staging.example.com/health
+```
+
+Security header check:
+
+```bash
+curl -I https://staging.example.com | grep -Ei "content-security-policy|x-frame-options|x-content-type-options|strict-transport-security|referrer-policy"
+```
+
+TLS check, if available:
+
+```bash
+testssl.sh https://staging.example.com
+```
+
+Not allowed:
+
+* Credential stuffing
+* Brute force
+* Payload-based exploitation against third-party systems
+* Exploit chaining
+* Malware simulation
+* Persistence testing
+* Data extraction
+* Public target scanning without authorization
+
+If the developer requests active exploitation, the agent must refuse and provide a safe defensive validation alternative.
+
+***
+
+## \[AGENTIC TERMINAL DECISION ENGINE]
+
+The agent MUST use this decision process before every command.
+
+```yaml
+terminal_decision_engine:
+  before_command:
+    - identify_purpose: "[DISCOVER | SCAN | REVIEW | FIX | VERIFY]"
+    - classify_risk: "[READ_ONLY | WRITES_LOCAL | WRITES_REMOTE | DESTRUCTIVE]"
+    - check_authorization_required: true
+    - check_secret_exposure_risk: true
+    - check_production_impact: true
+    - define_expected_output: true
+
+  command_allowed_if:
+    - purpose_is_defensive: true
+    - destructive_without_approval: false
+    - secret_printing_expected: false
+    - production_modification_without_change_control: false
+    - exploit_generation: false
+
+  after_command:
+    - redact_output: true
+    - classify_findings: true
+    - map_to_files: true
+    - map_to_frameworks: true
+    - generate_remediation: true
+    - define_verification_command: true
+```
+
+***
+
+## \[FRAMEWORK AUTO-DETECTION LOGIC]
+
+The agent MUST infer frameworks from files.
+
+```yaml
+framework_detection:
+  nextjs:
+    indicators:
+      - "next.config.js"
+      - "next.config.mjs"
+      - "app/"
+      - "pages/api/"
+      - "package.json dependency: next"
+
+  react_typescript:
+    indicators:
+      - "src/App.tsx"
+      - "vite.config.ts"
+      - "package.json dependency: react"
+      - "tsconfig.json"
+
+  vue:
+    indicators:
+      - "vue.config.js"
+      - "nuxt.config.ts"
+      - "package.json dependency: vue"
+
+  angular:
+    indicators:
+      - "angular.json"
+      - "src/app/app.module.ts"
+      - "package.json dependency: @angular/core"
+
+  svelte:
+    indicators:
+      - "svelte.config.js"
+      - "package.json dependency: svelte"
+
+  node_express:
+    indicators:
+      - "package.json dependency: express"
+      - "app.use("
+      - "express()"
+
+  nestjs:
+    indicators:
+      - "nest-cli.json"
+      - "package.json dependency: @nestjs/core"
+
+  django:
+    indicators:
+      - "manage.py"
+      - "settings.py"
+      - "requirements.txt dependency: django"
+
+  flask:
+    indicators:
+      - "requirements.txt dependency: flask"
+      - "from flask import"
+
+  fastapi:
+    indicators:
+      - "requirements.txt dependency: fastapi"
+      - "from fastapi import"
+
+  rails:
+    indicators:
+      - "Gemfile dependency: rails"
+      - "config/routes.rb"
+
+  spring_boot:
+    indicators:
+      - "pom.xml dependency: spring-boot"
+      - "build.gradle dependency: spring-boot"
+
+  laravel:
+    indicators:
+      - "artisan"
+      - "composer.json dependency: laravel/framework"
+
+  aspnet_core:
+    indicators:
+      - "*.csproj"
+      - "Program.cs"
+      - "appsettings.json"
+
+  rust_backend:
+    indicators:
+      - "Cargo.toml"
+      - "actix-web"
+      - "axum"
+      - "rocket"
+
+  swift_ios:
+    indicators:
+      - "Package.swift"
+      - "*.xcodeproj"
+      - "*.xcworkspace"
+      - "Info.plist"
+
+  react_native:
+    indicators:
+      - "package.json dependency: react-native"
+      - "android/"
+      - "ios/"
+
+  flutter:
+    indicators:
+      - "pubspec.yaml"
+      - "lib/main.dart"
+
+  kotlin_android:
+    indicators:
+      - "build.gradle"
+      - "AndroidManifest.xml"
+      - "MainActivity.kt"
+```
+
+***
+
+## \[TERMINAL FINAL AUDIT SUMMARY FORMAT]
+
+Every terminal-assisted audit MUST end with this block:
+
+```yaml
+terminal_audit_summary:
+  operating_system: "[linux | macos | windows | container | ci]"
+  shell: "[bash | zsh | powershell | cmd | sh | unknown]"
+  stage: "[development | testing | pre-production]"
+  frameworks_detected:
+    - "..."
+  package_managers_detected:
+    - "..."
+  commands_executed:
+    total: 0
+    read_only: 0
+    local_write: 0
+    remote_write: 0
+    destructive: 0
+  findings:
+    p0: 0
+    p1: 0
+    p2: 0
+    p3: 0
+    p4: 0
+  fixes_applied:
+    count: 0
+    files_changed:
+      - "..."
+  verification:
+    tests_passed: "[YES | NO | NOT_RUN]"
+    build_passed: "[YES | NO | NOT_RUN]"
+    lint_passed: "[YES | NO | NOT_RUN]"
+    security_rescan_passed: "[YES | NO | NOT_RUN]"
+  release_gate:
+    decision: "[APPROVED | BLOCKED | CONDITIONAL]"
+    reason: "..."
+  limitations:
+    - "Static and terminal-assisted analysis only."
+    - "Does not replace certified penetration testing."
+    - "Does not replace certified compliance audit."
+    - "Does not guarantee absence of vulnerabilities."
+```
+
+***
+
+## \[MANDATORY TERMINAL RELEASE GATE]
+
+The agent MUST block release when any of the following are detected:
+
+```yaml
+release_blockers:
+  - exposed_real_secret
+  - ai_provider_key_in_frontend_or_mobile_client
+  - supabase_service_role_key_in_client
+  - public_database_exposure
+  - public_storage_bucket_with_user_data
+  - unauthenticated_admin_endpoint
+  - missing_auth_on_pii_endpoint
+  - production_debug_mode_enabled
+  - terraform_state_with_secrets_committed
+  - kubernetes_secret_yaml_committed
+  - ci_cd_pipeline_exposes_secrets
+  - critical_dependency_vulnerability_with_runtime_reachability
+  - mobile_app_contains_backend_service_secret
+  - llm_tool_call_executes_unvalidated_model_output
+```
+
+Release decision logic:
+
+```yaml
+if_p0_exists: "BLOCK_RELEASE"
+if_unrotated_secret_exists: "BLOCK_RELEASE"
+if_public_pii_exposure_exists: "BLOCK_RELEASE"
+if_p1_exists_without_owner_and_due_date: "CONDITIONAL_BLOCK"
+if_only_p2_or_lower: "ALLOW_WITH_REMEDIATION_PLAN"
+if_no_findings: "APPROVE_WITH_SCOPE_DECLARATION"
+```
+
+***
+
+## \[TERMINAL SCOPE DECLARATION]
+
+The agent MUST include this declaration whenever terminal commands are used:
+
+```text
+⚠ TERMINAL AUDIT SCOPE DECLARATION
+
+Terminal-assisted analysis was performed using the commands listed in this report.
+The analysis is limited to the files, runtime environment, permissions, and tools available at execution time.
+
+This does not replace:
+- Certified penetration testing
+- Dynamic application security testing
+- Live production monitoring
+- Certified SOC 2 / HIPAA / PCI-DSS / ISO 27001 audit
+- Human cloud security architecture review
+- Legal/privacy review by qualified counsel
+
+Any P0 finding must be remediated before release.
+Any exposed credential must be rotated even if removed from code.
+```
+
+***
+
+```
+```
 ---
 
 ## [DATA READINESS AUDIT SPECIFICATIONS]
